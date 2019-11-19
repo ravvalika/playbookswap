@@ -1,0 +1,25 @@
+---
+- hosts : server
+  vars:
+    ResourceDisk_Format: y
+    ResourceDisk_Filesystem: xfs
+    ResourceDisk_MountPoint: /mnt/resource
+    ResourceDisk_EnableSwap: y
+    ResourceDisk_SwapSizeMB: "{{free.stdout}}"
+  tasks :
+    - name : get free size value
+      shell : "(lsblk | grep sdb1 | awk '{print ($4)*1000}')"
+      register: free
+    - debug: msg={{free.stdout}}
+    - name : unmount device
+      mount :
+        path : /mnt
+        state : unmounted
+      tags :
+        - setup
+    - name : setup swap
+      template : src=/etc/ansible/swap.conf dest=/etc/waagent.conf
+      notify : restart waagent
+  handlers:
+    - name: restart waagent
+      service: name=waagent state=restarted  
