@@ -1,5 +1,6 @@
 ---
 - hosts : server
+  become : yes
   vars:
     ResourceDisk_Format: y
     ResourceDisk_Filesystem: xfs
